@@ -16,17 +16,12 @@ import { PowerFlow } from './components/PowerFlow';
 import { BuildingCard } from './components/BuildingCard';
 import { SimulationControls } from './components/SimulationControls';
 import { MotionGraph } from './components/MotionGraph';
-import { ExportModal } from './components/ExportModal';
-import { HowItWorks } from './components/HowItWorks';
 import {
   AlertTriangle,
   Building2,
   CheckCircle2,
   Activity,
   LineChart,
-  Sparkles,
-  Github,
-  Download,
 } from 'lucide-react';
 
 export default function App() {
@@ -44,9 +39,6 @@ export default function App() {
 
   // Motion Graph visibility
   const [showMotionGraph, setShowMotionGraph] = useState<boolean>(true);
-
-  // Export to GitHub modal state
-  const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
 
   // Telemetry buffer for motion graph
   const [telemetryHistory, setTelemetryHistory] = useState<TelemetryPoint[]>([]);
@@ -82,14 +74,11 @@ export default function App() {
       tickRef.current += 1;
       const t = tickRef.current;
 
-      // Realistic subtle electrical fluctuations:
-      // Solar variation: smooth atmospheric variation (sine wave + small random jitter)
+      // Realistic electrical fluctuations:
       const solarDelta = Number((Math.sin(t * 0.25) * 0.8 + (Math.random() - 0.5) * 0.4).toFixed(1));
-
-      // Grid variation: slight distribution network fluctuations (+/- 0.3 kW)
       const gridDelta = Number(((Math.random() - 0.5) * 0.6).toFixed(1));
 
-      // Update sources with subtle live drift
+      // Update sources with live drift
       setSources((prev) => {
         const nextSolar = Math.max(0, Number((prev.solarPowerKW + solarDelta * 0.2).toFixed(1)));
         const nextGrid = prev.isGridOnline
@@ -103,7 +92,7 @@ export default function App() {
         };
       });
 
-      // Occasional small load change in one of the hostels (lights/fans turned on/off)
+      // Periodic load change in hostel buildings
       if (t % 3 === 0) {
         setBuildings((prev) => {
           const randomIndex = Math.floor(Math.random() * prev.length);
@@ -127,14 +116,14 @@ export default function App() {
           balanceKW: calculation.powerBalanceKW,
           isDeficit: calculation.isDeficit,
         };
-        return [...prev, newPoint].slice(-40); // retain last 40 points
+        return [...prev, newPoint].slice(-40);
       });
     }, 1500);
 
     return () => clearInterval(interval);
   }, [isLive, calculation, sources.isGridOnline, sources.gridPowerKW, sources.solarPowerKW]);
 
-  // 5. How the simulation changes the system
+  // Simulation scenario trigger handler
   const handleTriggerScenario = (scenario: 'normal' | 'grid-outage' | 'solar-reduced' | 'restore') => {
     setActiveScenario(scenario);
 
@@ -150,7 +139,6 @@ export default function App() {
         break;
 
       case 'grid-outage':
-        // Grid trips to 0 kW, solar remains available
         setSources((prev) => ({
           ...prev,
           gridPowerKW: 0,
@@ -160,7 +148,6 @@ export default function App() {
         break;
 
       case 'solar-reduced':
-        // Heavy cloud cover reduces solar to 5 kW
         setSources((prev) => ({
           ...prev,
           gridPowerKW: 34.5,
@@ -171,10 +158,9 @@ export default function App() {
     }
   };
 
-  // Simulate a live transient wave (e.g., sudden load surge or solar cloud dip)
+  // Simulate a live transient wave
   const handleTriggerTransient = () => {
     setActiveScenario('transient');
-    // Drop solar temporarily by 7 kW and spike Makama hostel load by 4 kW
     setSources((prev) => ({
       ...prev,
       solarPowerKW: Math.max(2, Number((prev.solarPowerKW - 7.5).toFixed(1))),
@@ -198,18 +184,17 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col selection:bg-emerald-500/30">
-      {/* Top Engineering SCADA Header */}
+      {/* Top SCADA Header */}
       <Header
         calculation={calculation}
         isLive={isLive}
         onToggleLive={() => setIsLive(!isLive)}
         showMotionGraph={showMotionGraph}
         onToggleMotionGraph={() => setShowMotionGraph(!showMotionGraph)}
-        onOpenExport={() => setIsExportOpen(true)}
       />
 
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:px-6 space-y-6">
-        {/* Prominent Power Deficit / Surplus Notification Banner */}
+        {/* Power Deficit / Surplus Status Banner */}
         {calculation.isDeficit ? (
           <div className="p-4 rounded-xl bg-red-950/80 border-2 border-red-500/80 shadow-lg text-red-200 font-mono text-xs sm:text-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
@@ -221,12 +206,12 @@ export default function App() {
                   POWER DEFICIT DETECTED: -{calculation.deficitKW} kW
                 </strong>
                 <span className="text-red-300 text-xs">
-                  Available Power: <strong>{calculation.totalAvailablePowerKW} kW</strong> | Demand: <strong>{calculation.totalLoadKW} kW</strong> | Deficit: <strong>{calculation.deficitKW} kW</strong>
+                  Available Generation: <strong>{calculation.totalAvailablePowerKW} kW</strong> | Total Demand: <strong>{calculation.totalLoadKW} kW</strong> | Net Deficit: <strong>{calculation.deficitKW} kW</strong>
                 </span>
               </div>
             </div>
-            <div className="text-[11px] bg-red-900/40 p-2 rounded border border-red-800/80">
-              Load management active: Prioritized supply maintains essential hostels.
+            <div className="text-[11px] bg-red-900/40 px-3 py-1.5 rounded border border-red-800/80 font-bold text-red-200">
+              PRIORITIZED LOAD SHEDDING ACTIVE
             </div>
           </div>
         ) : (
@@ -238,12 +223,12 @@ export default function App() {
               </span>
             </div>
             <span className="text-[11px] text-emerald-400 font-bold hidden sm:inline">
-              All 4 Hostels 100% Powered
+              All 4 Feeders Energized (100%)
             </span>
           </div>
         )}
 
-        {/* Generate Motion Graph Prominent Call-to-Action Bar */}
+        {/* Real-time Motion Graph Bar */}
         <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
@@ -251,15 +236,15 @@ export default function App() {
             </div>
             <div>
               <div className="text-sm font-bold font-mono text-white flex items-center gap-2">
-                Real-Time Motion Graph Telemetry
+                Real-Time Motion Waveform Telemetry
                 <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
                   isLive ? 'bg-emerald-950 text-emerald-300 border border-emerald-700' : 'bg-slate-800 text-slate-400'
                 }`}>
-                  {isLive ? 'LIVE CHANGING VALUES ACTIVE' : 'STREAM PAUSED'}
+                  {isLive ? 'LIVE TELEMETRY STREAM' : 'STREAM PAUSED'}
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Visualize live generation curves against total building demand in real time.
+                Continuous dynamic tracking of generation curve vs aggregate feeder load
               </p>
             </div>
           </div>
@@ -275,7 +260,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Dynamic Motion Graph Section (rendered when showMotionGraph is true) */}
+        {/* Motion Graph */}
         {showMotionGraph && (
           <MotionGraph
             telemetryHistory={telemetryHistory}
@@ -288,10 +273,10 @@ export default function App() {
           />
         )}
 
-        {/* Section 1: Power Sources Cards */}
+        {/* Section 1: Power Sources */}
         <PowerSources sources={sources} calculation={calculation} />
 
-        {/* Section 2: Building Loads (Hostels) Cards */}
+        {/* Section 2: Building Loads */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -316,53 +301,31 @@ export default function App() {
           </div>
         </div>
 
-        {/* Section 3: Single-Line Power Flow Visualization */}
+        {/* Section 3: Single-Line Power Flow */}
         <PowerFlow sources={sources} calculation={calculation} />
 
-        {/* Section 4: Simulation Controls */}
+        {/* Section 4: Feeder Controls */}
         <SimulationControls
           sources={sources}
           onUpdateSources={handleUpdateSources}
           onTriggerScenario={handleTriggerScenario}
           activeScenario={activeScenario}
         />
-
-        {/* Section 5: Educational "How It Works" Section */}
-        <HowItWorks />
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950 px-4 py-3 text-xs font-mono text-slate-500">
+      {/* Professional SCADA Footer */}
+      <footer className="border-t border-slate-900 bg-slate-950 px-4 py-4 text-xs font-mono text-slate-500">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span>Smart Microgrid Monitor • Electrical Engineering Prototype</span>
-            <span className="hidden md:inline">• Educational demonstration of real-time power balancing</span>
+            <span>Smart Microgrid Supervisory Control & Data Acquisition (SCADA)</span>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsExportOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1 rounded bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-colors"
-            >
-              <Github className="w-3.5 h-3.5 text-slate-400" />
-              <span>Export Code to GitHub</span>
-            </button>
-            <a
-              href="/api/export-archive"
-              download="smart-microgrid-monitor.tar.gz"
-              className="flex items-center gap-1.5 px-3 py-1 rounded bg-slate-900 hover:bg-slate-800 text-emerald-400 hover:text-emerald-300 border border-slate-800 transition-colors"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Download .tar.gz</span>
-            </a>
+          <div className="flex items-center gap-4 text-slate-400">
+            <span>Feeder Bus: 415V / 50Hz</span>
+            <span className="text-slate-600">•</span>
+            <span className="text-emerald-400">Telemetry Active</span>
           </div>
         </div>
       </footer>
-
-      {/* Export to GitHub Modal */}
-      <ExportModal
-        isOpen={isExportOpen}
-        onClose={() => setIsExportOpen(false)}
-      />
     </div>
   );
 }

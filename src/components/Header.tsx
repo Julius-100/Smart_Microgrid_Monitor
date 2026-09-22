@@ -12,8 +12,6 @@ import {
   Zap,
   Play,
   Pause,
-  LineChart,
-  Github,
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -22,7 +20,6 @@ interface HeaderProps {
   onToggleLive: () => void;
   showMotionGraph: boolean;
   onToggleMotionGraph: () => void;
-  onOpenExport: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -31,14 +28,13 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleLive,
   showMotionGraph,
   onToggleMotionGraph,
-  onOpenExport,
 }) => {
   const isDeficit = calculation.isDeficit;
 
   return (
     <header className="bg-slate-900 border-b border-slate-800 shadow-md sticky top-0 z-30">
       <div className="max-w-6xl mx-auto px-4 py-3 sm:px-6 flex flex-col md:flex-row md:items-center justify-between gap-3">
-        {/* Brand & Subtitle */}
+        {/* Brand & Feeder Identity */}
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 shadow-inner">
             <Zap className="w-5 h-5" />
@@ -48,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
               Smart Microgrid Monitor
             </h1>
             <p className="text-xs text-slate-400">
-              Small-Scale Electrical Microgrid Distribution & Load Balancer
+              Campus Microgrid Supervisory & Real-Time Load Balancer
             </p>
           </div>
         </div>
@@ -70,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span>{isLive ? 'LIVE FEED' : 'PAUSED'}</span>
           </button>
 
-          {/* Prominent "Generate Motion Graph" Button */}
+          {/* Motion Graph Button */}
           <button
             onClick={onToggleMotionGraph}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all shadow-md ${
@@ -81,16 +77,6 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Activity className="w-3.5 h-3.5 text-emerald-400" />
             <span>{showMotionGraph ? 'Hide Motion Graph' : 'Generate Motion Graph'}</span>
-          </button>
-
-          {/* GitHub Export Button */}
-          <button
-            onClick={onOpenExport}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition-all shadow-sm"
-            title="Export repository to GitHub with no restrictions"
-          >
-            <Github className="w-3.5 h-3.5 text-slate-300" />
-            <span>Export Repo</span>
           </button>
 
           {/* Real-time power balance pill */}

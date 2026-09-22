@@ -36,11 +36,11 @@ export const SimulationControls: React.FC<SimulationControlsProps> = ({
         <div className="flex items-center gap-2">
           <Sliders className="w-4 h-4 text-emerald-400" />
           <h3 className="text-sm font-bold uppercase tracking-wider font-mono text-white">
-            Simulation Controls
+            SCADA Dispatch & Scenario Controls
           </h3>
         </div>
         <span className="text-xs font-mono text-slate-400">
-          Click a preset or adjust live sliders below
+          Feeder state dispatch & active generation calibration
         </span>
       </div>
 
