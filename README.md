@@ -87,6 +87,15 @@ git push -u origin main
 
 ---
 
+## ⚡ Deploy to Vercel (One-Click Import)
+
+1. Go to [Vercel](https://vercel.com/new) and select **"Import Git Repository"**.
+2. Select your `smart-microgrid-monitor` GitHub repository.
+3. Vercel will automatically detect the **Vite** framework, `npm run build`, and `dist` output directory via `vercel.json`.
+4. Click **Deploy** — the deployment completes cleanly in seconds.
+
+---
+
 ## 📂 Project Architecture
 
 ```
