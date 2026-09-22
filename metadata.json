@@ -1,0 +1,6 @@
+{
+  "name": "AI Smart Microgrid Energy Manager",
+  "description": "Interactive educational and engineering microgrid simulation with dynamic power balancing, automated load shedding, battery storage management, and an AI Energy Engineer powered by Gemini.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
